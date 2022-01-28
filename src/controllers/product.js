@@ -1,4 +1,6 @@
-const { product, user, category, productCategory } = require('../../models');
+const { product, user, category, productCategory } = require("../../models");
+
+const cloudinary = require("../utils/cloudinary");
 
 exports.getProducts = async (req, res) => {
   try {
@@ -6,26 +8,26 @@ exports.getProducts = async (req, res) => {
       include: [
         {
           model: user,
-          as: 'user',
+          as: "user",
           attributes: {
-            exclude: ['createdAt', 'updatedAt', 'password'],
+            exclude: ["createdAt", "updatedAt", "password"],
           },
         },
         {
           model: category,
-          as: 'categories',
+          as: "categories",
           through: {
             model: productCategory,
-            as: 'bridge',
+            as: "bridge",
             attributes: [],
           },
           attributes: {
-            exclude: ['createdAt', 'updatedAt'],
+            exclude: ["createdAt", "updatedAt"],
           },
         },
       ],
       attributes: {
-        exclude: ['createdAt', 'updatedAt', 'idUser'],
+        exclude: ["createdAt", "updatedAt", "idUser"],
       },
     });
 
@@ -36,14 +38,14 @@ exports.getProducts = async (req, res) => {
     });
 
     res.send({
-      status: 'success...',
+      status: "success...",
       data,
     });
   } catch (error) {
     console.log(error);
     res.send({
-      status: 'failed',
-      message: 'Server Error',
+      status: "failed",
+      message: "Server Error",
     });
   }
 };
@@ -58,26 +60,26 @@ exports.getProduct = async (req, res) => {
       include: [
         {
           model: user,
-          as: 'user',
+          as: "user",
           attributes: {
-            exclude: ['createdAt', 'updatedAt', 'password'],
+            exclude: ["createdAt", "updatedAt", "password"],
           },
         },
         {
           model: category,
-          as: 'categories',
+          as: "categories",
           through: {
             model: productCategory,
-            as: 'bridge',
+            as: "bridge",
             attributes: [],
           },
           attributes: {
-            exclude: ['createdAt', 'updatedAt'],
+            exclude: ["createdAt", "updatedAt"],
           },
         },
       ],
       attributes: {
-        exclude: ['createdAt', 'updatedAt', 'idUser'],
+        exclude: ["createdAt", "updatedAt", "idUser"],
       },
     });
 
@@ -89,14 +91,14 @@ exports.getProduct = async (req, res) => {
     };
 
     res.send({
-      status: 'success...',
+      status: "success...",
       data,
     });
   } catch (error) {
     console.log(error);
     res.send({
-      status: 'failed',
-      message: 'Server Error',
+      status: "failed",
+      message: "Server Error",
     });
   }
 };
@@ -104,13 +106,19 @@ exports.getProduct = async (req, res) => {
 exports.addProduct = async (req, res) => {
   try {
     let { categoryId } = req.body;
-    categoryId = categoryId.split(',');
+    categoryId = categoryId.split(",");
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "dumbmerch_file",
+      use_filename: true,
+      unique_filename: false,
+    });
 
     const data = {
       name: req.body.name,
       desc: req.body.desc,
       price: req.body.price,
-      image: req.file.filename,
+      image: result.public_id,
       qty: req.body.qty,
       idUser: req.user.id,
     };
@@ -130,32 +138,32 @@ exports.addProduct = async (req, res) => {
       include: [
         {
           model: user,
-          as: 'user',
+          as: "user",
           attributes: {
-            exclude: ['createdAt', 'updatedAt', 'password'],
+            exclude: ["createdAt", "updatedAt", "password"],
           },
         },
         {
           model: category,
-          as: 'categories',
+          as: "categories",
           through: {
             model: productCategory,
-            as: 'bridge',
+            as: "bridge",
             attributes: [],
           },
           attributes: {
-            exclude: ['createdAt', 'updatedAt'],
+            exclude: ["createdAt", "updatedAt"],
           },
         },
       ],
       attributes: {
-        exclude: ['createdAt', 'updatedAt', 'idUser'],
+        exclude: ["createdAt", "updatedAt", "idUser"],
       },
     });
     productData = JSON.parse(JSON.stringify(productData));
 
     res.send({
-      status: 'success...',
+      status: "success...",
       data: {
         ...productData,
         image: process.env.PATH_FILE + productData.image,
@@ -164,8 +172,8 @@ exports.addProduct = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).send({
-      status: 'failed',
-      message: 'Server Error',
+      status: "failed",
+      message: "Server Error",
     });
   }
 };
@@ -174,7 +182,7 @@ exports.updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     let { categoryId } = req.body;
-    categoryId = await categoryId.split(',');
+    categoryId = await categoryId.split(",");
 
     const data = {
       name: req?.body?.name,
@@ -192,7 +200,7 @@ exports.updateProduct = async (req, res) => {
     });
 
     let productCategoryData = [];
-    if (categoryId != 0 && categoryId[0] != '') {
+    if (categoryId != 0 && categoryId[0] != "") {
       productCategoryData = categoryId.map((item) => {
         return { idProduct: parseInt(id), idCategory: parseInt(item) };
       });
@@ -209,7 +217,7 @@ exports.updateProduct = async (req, res) => {
     });
 
     res.send({
-      status: 'success',
+      status: "success",
       data: {
         id,
         data,
@@ -220,8 +228,8 @@ exports.updateProduct = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.send({
-      status: 'failed',
-      message: 'Server Error',
+      status: "failed",
+      message: "Server Error",
     });
   }
 };
@@ -243,14 +251,14 @@ exports.deleteProduct = async (req, res) => {
     });
 
     res.send({
-      status: 'success',
+      status: "success",
       message: `Delete product id: ${id} finished`,
     });
   } catch (error) {
     console.log(error);
     res.send({
-      status: 'failed',
-      message: 'Server Error',
+      status: "failed",
+      message: "Server Error",
     });
   }
 };
