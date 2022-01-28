@@ -109,7 +109,7 @@ exports.addProduct = async (req, res) => {
     categoryId = categoryId.split(",");
 
     const result = await cloudinary.uploader.upload(req.file.path, {
-      folder: "dumbmerch_file",
+      folder: "batch29",
       use_filename: true,
       unique_filename: false,
     });
